@@ -1,68 +1,114 @@
-import java.awt.Graphics2D;
-import java.awt.event.KeyListener;
-import java.awt.image.BufferStrategy;
 import java.awt.*;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.image.BufferStrategy;
+import javax.swing.*;
+//long startTime;
+public class BasicGameApp implements Runnable {
 
-public class BasicGameApp implements Runnable { // Implements Runnable and KeyListener { //will add KeyListener
-
-    // Variable definition section
     final int WIDTH = 1000;
     final int HEIGHT = 700;
+    int frameCount = 0;
 
-    // Declare the variables needed for the graphics
+  //  startTime = System.currentTimeMillis();
+
     public JFrame frame;
     public Canvas canvas;
     public JPanel panel;
     public BufferStrategy bufferStrategy;
     public Image UllmarkPic, CoylePic, CarloPic, FreddyPic, MarchandPic;
 
-    // Declare the objects for players
     private Players Ullmark, Coyle, Carlo, Freddy, Marchand;
+    public Sweeney sweeney;
+    public Image SweeneyPic;
 
-    // Main method definition
     public static void main(String[] args) {
-        BasicGameApp ex = new BasicGameApp();   // creates a new instance of the game
-        new Thread(ex).start();                 // starts the game in a new thread
+        BasicGameApp ex = new BasicGameApp();
+        new Thread(ex).start();
     }
 
-    // Constructor Method
     public BasicGameApp() {
-        setUpGraphics();// Sets up the graphics
+        setUpGraphics();
 
-        // Load the player images
+        SweeneyPic = Toolkit.getDefaultToolkit().getImage("The \"GM\".png");
+        sweeney = new Sweeney(400, 300, SweeneyPic);
+        canvas.addKeyListener(sweeney);
+
+        // Load images
         UllmarkPic = Toolkit.getDefaultToolkit().getImage("POOR Ullmark.png");
         MarchandPic = Toolkit.getDefaultToolkit().getImage("POOR POOR MARCHAND.png");
         CoylePic = Toolkit.getDefaultToolkit().getImage("poor coyle.png");
         CarloPic = Toolkit.getDefaultToolkit().getImage("poor carlo.png");
         FreddyPic = Toolkit.getDefaultToolkit().getImage("poor freddy.png");
 
+// Create players with random positions using Math.random()
+        // Use placeholder width and height values
+        int defaultWidth = 60;
+        int defaultHeight = 80;
 
-        // Create players
-        Ullmark = new Players(100, 100, UllmarkPic);
-        Coyle = new Players(200, 100, CoylePic);
-        Carlo = new Players(300, 100, CarloPic);
-        Freddy = new Players(400, 100, FreddyPic);
-        Marchand = new Players(500, 100, MarchandPic);
+        // Create players with random positions and print starting positions to ensure they are random
+        Ullmark = new Players((int)(Math.random() * (WIDTH - defaultWidth)), (int)(Math.random() * (HEIGHT - defaultHeight)), UllmarkPic);
+        System.out.println("Ullmark x: " + Ullmark.xpos + ", y: " + Ullmark.ypos);
+
+        Coyle = new Players((int)(Math.random() * (WIDTH - defaultWidth)), (int)(Math.random() * (HEIGHT - defaultHeight)), CoylePic);
+        System.out.println("Coyle x: " + Coyle.xpos + ", y: " + Coyle.ypos);
+
+        Carlo = new Players((int)(Math.random() * (WIDTH - defaultWidth)), (int)(Math.random() * (HEIGHT - defaultHeight)), CarloPic);
+        System.out.println("Carlo x: " + Carlo.xpos + ", y: " + Carlo.ypos);
+
+        Freddy = new Players((int)(Math.random() * (WIDTH - defaultWidth)), (int)(Math.random() * (HEIGHT - defaultHeight)), FreddyPic);
+        System.out.println("Freddy x: " + Freddy.xpos + ", y: " + Freddy.ypos);
+
+        Marchand = new Players((int)(Math.random() * (WIDTH - defaultWidth)), (int)(Math.random() * (HEIGHT - defaultHeight)), MarchandPic);
+        System.out.println("Marchand x: " + Marchand.xpos + ", y: " + Marchand.ypos);
     }
 
     public void moveThings() {
 
+        Ullmark.wrap(700, 1000);
+;
+        Coyle.bounce(700, 1000);
+
+        Carlo.wrap(700, 1000);
+
+        Freddy.bounce(700, 1000);
+
+        Marchand.wrap(700, 1000);
+
+        sweeney.sweeneymoves();
     }
 
-
-
-    // Main thread
     public void run() {
         while (true) {
-            render();  // Paint the graphics
-            moveThings();
-            pause(20);  // Pause for 20 ms
+            render();        // Render the graphics
+            moveThings();    // Move the players
+
+            frameCount++;    // Increment the frame count
+
+            if (frameCount == 1000) { // Every ~20 seconds
+                System.out.println("Speed increased");
+
+                // Increase speed but ensure max speed is 10
+                Ullmark.dx = Math.min(Ullmark.dx + 1, 10);
+                Ullmark.dy = Math.min(Ullmark.dy + 1, 10);
+
+                Coyle.dx = Math.min(Coyle.dx + 1, 10);
+                Coyle.dy = Math.min(Coyle.dy + 1, 10);
+
+                Carlo.dx = Math.min(Carlo.dx + 1, 10);
+                Carlo.dy = Math.min(Carlo.dy + 1, 10);
+
+                Freddy.dx = Math.min(Freddy.dx + 1, 5);
+                Freddy.dy = Math.min(Freddy.dy + 1, 5);
+
+                Marchand.dx = Math.min(Marchand.dx + 1, 10);
+                Marchand.dy = Math.min(Marchand.dy + 1, 10);
+
+                frameCount = 0; // Reset counter
+            }
+
+            pause(20); // Pause for 20 ms before the next frame
         }
     }
 
-    // Pause method
     public void pause(int time) {
         try {
             Thread.sleep(time);
@@ -70,9 +116,8 @@ public class BasicGameApp implements Runnable { // Implements Runnable and KeyLi
         }
     }
 
-    // Graphics setup method
     private void setUpGraphics() {
-        frame = new JFrame("Player Display");  // Create the program window
+        frame = new JFrame("Player Display");
         panel = (JPanel) frame.getContentPane();
         panel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         panel.setLayout(null);
@@ -81,7 +126,7 @@ public class BasicGameApp implements Runnable { // Implements Runnable and KeyLi
         canvas.setBounds(0, 0, WIDTH, HEIGHT);
         canvas.setIgnoreRepaint(true);
 
-        panel.add(canvas);  // Add the canvas to the panel
+        panel.add(canvas);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setResizable(false);
@@ -92,28 +137,39 @@ public class BasicGameApp implements Runnable { // Implements Runnable and KeyLi
         canvas.requestFocus();
     }
 
-    // Method to render the game objects on the screen
     private void render() {
-
         Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
         g.clearRect(0, 0, WIDTH, HEIGHT);
 
-        // Render each player
+//        long currentTime = System.currentTimeMillis();
+//        long elapsedMillis = currentTime - startTime;
+//        long totalSeconds = elapsedMillis / 1000;
+//
+//        long hours = totalSeconds / 3600;
+//        long minutes = (totalSeconds % 3600) / 60;
+//        long seconds = totalSeconds % 60;
+
+       //String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+
+// Set font and draw at top of screen
+        //g.setColor(Color.BLACK);
+       // g.setFont(new Font("Times New Roman", Font.BOLD, 24));
+     //   g.drawString("Time: " + timeString, 20, 40);
+
         if (Ullmark.isAlive)
             g.drawImage(Ullmark.image, Ullmark.xpos, Ullmark.ypos, Ullmark.width, Ullmark.height, null);
-
-
         if (Coyle.isAlive)
             g.drawImage(Coyle.image, Coyle.xpos, Coyle.ypos, Coyle.width, Coyle.height, null);
-
         if (Carlo.isAlive)
             g.drawImage(Carlo.image, Carlo.xpos, Carlo.ypos, Carlo.width, Carlo.height, null);
-
         if (Freddy.isAlive)
             g.drawImage(Freddy.image, Freddy.xpos, Freddy.ypos, Freddy.width, Freddy.height, null);
-
         if (Marchand.isAlive)
             g.drawImage(Marchand.image, Marchand.xpos, Marchand.ypos, Marchand.width, Marchand.height, null);
+
+
+        if (sweeney.isAlive)
+            g.drawImage(sweeney.image, sweeney.xpos, sweeney.ypos, sweeney.width, sweeney.height, null);
 
         g.dispose();
         bufferStrategy.show();
