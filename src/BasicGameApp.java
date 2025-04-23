@@ -1,20 +1,24 @@
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 import javax.swing.*;
-//long startTime;
 public class BasicGameApp implements Runnable {
 
     final int WIDTH = 1000;
     final int HEIGHT = 700;
     int frameCount = 0;
 
-  //  startTime = System.currentTimeMillis();
+    public int score;
+
 
     public JFrame frame;
     public Canvas canvas;
     public JPanel panel;
     public BufferStrategy bufferStrategy;
     public Image UllmarkPic, CoylePic, CarloPic, FreddyPic, MarchandPic;
+    //make background array: Carlo:Sweeney.png , Coyle:Sweeney.png , Freddy:Sweeney.png , Marchand:Sweeney.png , Ullmark.Sweeney.png (when a background score=alie and all charachters =not alive).
+    //want to add a score bar every second you are alive +1 point (public int score) -- tried to put this in render did not work:   //g.drawString(score,100,100, WIDTH, HEIGHT);
+    //want to make enter speed boost 1 second max (so like if dx or dy =15/-15 for more than 1 second then dx/dy=7/-7
+
 
     private Players Ullmark, Coyle, Carlo, Freddy, Marchand;
     public Sweeney sweeney;
@@ -64,7 +68,7 @@ public class BasicGameApp implements Runnable {
     public void moveThings() {
 
         Ullmark.wrap(700, 1000);
-;
+
         Coyle.bounce(700, 1000);
 
         Carlo.wrap(700, 1000);
@@ -73,7 +77,7 @@ public class BasicGameApp implements Runnable {
 
         Marchand.wrap(700, 1000);
 
-        sweeney.sweeneymoves();
+        sweeney.sweeneywrap(700,1000);
     }
 
     public void run() {
@@ -96,8 +100,8 @@ public class BasicGameApp implements Runnable {
                 Carlo.dx = Math.min(Carlo.dx + 1, 10);
                 Carlo.dy = Math.min(Carlo.dy + 1, 10);
 
-                Freddy.dx = Math.min(Freddy.dx + 1, 5);
-                Freddy.dy = Math.min(Freddy.dy + 1, 5);
+                Freddy.dx = Math.min(Freddy.dx + 1, 10);
+                Freddy.dy = Math.min(Freddy.dy + 1, 10);
 
                 Marchand.dx = Math.min(Marchand.dx + 1, 10);
                 Marchand.dy = Math.min(Marchand.dy + 1, 10);
@@ -140,21 +144,8 @@ public class BasicGameApp implements Runnable {
     private void render() {
         Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
         g.clearRect(0, 0, WIDTH, HEIGHT);
+        //g.drawString(score,100,100, WIDTH, HEIGHT);
 
-//        long currentTime = System.currentTimeMillis();
-//        long elapsedMillis = currentTime - startTime;
-//        long totalSeconds = elapsedMillis / 1000;
-//
-//        long hours = totalSeconds / 3600;
-//        long minutes = (totalSeconds % 3600) / 60;
-//        long seconds = totalSeconds % 60;
-
-       //String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-
-// Set font and draw at top of screen
-        //g.setColor(Color.BLACK);
-       // g.setFont(new Font("Times New Roman", Font.BOLD, 24));
-     //   g.drawString("Time: " + timeString, 20, 40);
 
         if (Ullmark.isAlive)
             g.drawImage(Ullmark.image, Ullmark.xpos, Ullmark.ypos, Ullmark.width, Ullmark.height, null);
