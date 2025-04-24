@@ -43,12 +43,24 @@ public class Players {
 
     public void bounce(int screenWidth, int screenHeight) {
         move();
-        if (xpos <= 0 || xpos + width >= screenWidth) dx = -dx;
-        if (ypos <= 0 || ypos + height >= screenHeight) dy = -dy;
+
+        // Check if the object hits the left or right edge
+        if (xpos <= 0 || xpos + width >= screenWidth) {
+            dx = -dx; // Reverse direction
+            // Make sure xpos stays within bounds
+            xpos = Math.max(0, Math.min(xpos, screenWidth - width));
+        }
+
+        // Check if the object hits the top or bottom edge
+        if (ypos <= 0 || ypos + height >= screenHeight) {
+            dy = -dy; // Reverse direction
+            // Make sure ypos stays within bounds
+            ypos = Math.max(0, Math.min(ypos, screenHeight - height));
+        }
+
+        // Update the rectangle's position
         rec.setLocation(xpos, ypos);
     }
 
-    public void render(Graphics2D g) {
-        g.drawImage(image, xpos, ypos, width, height, null);
-    }
+
 }

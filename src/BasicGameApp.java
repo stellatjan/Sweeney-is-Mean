@@ -8,6 +8,18 @@ public class BasicGameApp implements Runnable {
     int frameCount = 0;
 
     public int score;
+    int scoreTimer = 0; // counts frames to track time
+
+    // background[i] == true means Sweeney collided with that character
+    boolean[] background = new boolean[5];
+
+
+// Index mapping:
+// 0 - Carlo
+// 1 - Coyle
+// 2 - Freddy
+// 3 - Marchand
+// 4 - Ullmark
 
 
     public JFrame frame;
@@ -15,14 +27,15 @@ public class BasicGameApp implements Runnable {
     public JPanel panel;
     public BufferStrategy bufferStrategy;
     public Image UllmarkPic, CoylePic, CarloPic, FreddyPic, MarchandPic;
-    //make background array: Carlo:Sweeney.png , Coyle:Sweeney.png , Freddy:Sweeney.png , Marchand:Sweeney.png , Ullmark.Sweeney.png (when a background score=alie and all charachters =not alive).
-    //want to add a score bar every second you are alive +1 point (public int score) -- tried to put this in render did not work:   //g.drawString(score,100,100, WIDTH, HEIGHT);
-    //want to make enter speed boost 1 second max (so like if dx or dy =15/-15 for more than 1 second then dx/dy=7/-7
+    Image CarloBackgroundImage, CoyleBackgroundImage, FreddyBackgroundImage, MarchandBackgroundImage, UllmarkBackgroundImage;
+
+
 
 
     private Players Ullmark, Coyle, Carlo, Freddy, Marchand;
     public Sweeney sweeney;
     public Image SweeneyPic;
+    boolean gameOver = false;
 
     public static void main(String[] args) {
         BasicGameApp ex = new BasicGameApp();
@@ -43,10 +56,18 @@ public class BasicGameApp implements Runnable {
         CarloPic = Toolkit.getDefaultToolkit().getImage("poor carlo.png");
         FreddyPic = Toolkit.getDefaultToolkit().getImage("poor freddy.png");
 
+        //Load background images
+        CarloBackgroundImage = Toolkit.getDefaultToolkit().getImage("CarloBackgroundImage.png");
+        CoyleBackgroundImage = Toolkit.getDefaultToolkit().getImage("CoyleBackgroundImage.png");
+        FreddyBackgroundImage = Toolkit.getDefaultToolkit().getImage("FreddyBackgroundImage.png");
+        MarchandBackgroundImage = Toolkit.getDefaultToolkit().getImage("MarchandBackgroundImage.png");
+        UllmarkBackgroundImage = Toolkit.getDefaultToolkit().getImage("UllmarkBackgroundImage.png");
+
 // Create players with random positions using Math.random()
         // Use placeholder width and height values
         int defaultWidth = 60;
         int defaultHeight = 80;
+
 
         // Create players with random positions and print starting positions to ensure they are random
         Ullmark = new Players((int)(Math.random() * (WIDTH - defaultWidth)), (int)(Math.random() * (HEIGHT - defaultHeight)), UllmarkPic);
@@ -63,6 +84,8 @@ public class BasicGameApp implements Runnable {
 
         Marchand = new Players((int)(Math.random() * (WIDTH - defaultWidth)), (int)(Math.random() * (HEIGHT - defaultHeight)), MarchandPic);
         System.out.println("Marchand x: " + Marchand.xpos + ", y: " + Marchand.ypos);
+
+
     }
 
     public void moveThings() {
@@ -77,20 +100,84 @@ public class BasicGameApp implements Runnable {
 
         Marchand.wrap(700, 1000);
 
-        sweeney.sweeneywrap(700,1000);
+        sweeney.sweeneywrap(700,900); //smaller for sweeney so wrap appears smoother and he cant hide
+
+        collisions(); //call collisions
+
     }
+
+    public void collisions() {
+        if (sweeney.rec.intersects(Carlo.rec) && Carlo.isAlive) {
+            switchBackground(0);
+            Carlo.isAlive = false;
+            Coyle.isAlive= false;
+            Freddy.isAlive=false;
+            Marchand.isAlive=false;
+            Ullmark.isAlive=false;
+            sweeney.isAlive=false;
+        }
+
+        if (sweeney.rec.intersects(Coyle.rec) && Coyle.isAlive) {
+            switchBackground(1);
+            Carlo.isAlive = false;
+            Coyle.isAlive= false;
+            Freddy.isAlive=false;
+            Marchand.isAlive=false;
+            Ullmark.isAlive=false;
+            sweeney.isAlive=false;
+        }
+
+        if (sweeney.rec.intersects(Freddy.rec) && Freddy.isAlive) {
+            switchBackground(2);
+            Carlo.isAlive = false;
+            Coyle.isAlive= false;
+            Freddy.isAlive=false;
+            Marchand.isAlive=false;
+            Ullmark.isAlive=false;
+            sweeney.isAlive=false;
+        }
+
+        if (sweeney.rec.intersects(Marchand.rec) && Marchand.isAlive) {
+            switchBackground(3);
+            Carlo.isAlive = false;
+            Coyle.isAlive= false;
+            Freddy.isAlive=false;
+            Marchand.isAlive=false;
+            Ullmark.isAlive=false;
+            sweeney.isAlive=false;
+        }
+
+        if (sweeney.rec.intersects(Ullmark.rec) && Ullmark.isAlive) {
+            switchBackground(4);
+            Carlo.isAlive = false;
+            Coyle.isAlive= false;
+            Freddy.isAlive=false;
+            Marchand.isAlive=false;
+            Ullmark.isAlive=false;
+            sweeney.isAlive=false;
+        }
+
+}
 
     public void run() {
         while (true) {
-            render();        // Render the graphics
-            moveThings();    // Move the players
+            render();
+            moveThings();
+            sweeney.update();
 
-            frameCount++;    // Increment the frame count
+            frameCount++;
 
-            if (frameCount == 1000) { // Every ~20 seconds
+            if (!gameOver) {
+                scoreTimer++;
+                if (scoreTimer >= 30) {
+                    score++;
+                    scoreTimer = 0;
+                }
+            }
+
+            if (frameCount == 1000) {
                 System.out.println("Speed increased");
 
-                // Increase speed but ensure max speed is 10
                 Ullmark.dx = Math.min(Ullmark.dx + 1, 10);
                 Ullmark.dy = Math.min(Ullmark.dy + 1, 10);
 
@@ -106,10 +193,10 @@ public class BasicGameApp implements Runnable {
                 Marchand.dx = Math.min(Marchand.dx + 1, 10);
                 Marchand.dy = Math.min(Marchand.dy + 1, 10);
 
-                frameCount = 0; // Reset counter
+                frameCount = 0;
             }
 
-            pause(20); // Pause for 20 ms before the next frame
+            pause(20); // 20 ms
         }
     }
 
@@ -144,25 +231,65 @@ public class BasicGameApp implements Runnable {
     private void render() {
         Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
         g.clearRect(0, 0, WIDTH, HEIGHT);
-        //g.drawString(score,100,100, WIDTH, HEIGHT);
 
 
-        if (Ullmark.isAlive)
-            g.drawImage(Ullmark.image, Ullmark.xpos, Ullmark.ypos, Ullmark.width, Ullmark.height, null);
-        if (Coyle.isAlive)
-            g.drawImage(Coyle.image, Coyle.xpos, Coyle.ypos, Coyle.width, Coyle.height, null);
-        if (Carlo.isAlive)
-            g.drawImage(Carlo.image, Carlo.xpos, Carlo.ypos, Carlo.width, Carlo.height, null);
-        if (Freddy.isAlive)
-            g.drawImage(Freddy.image, Freddy.xpos, Freddy.ypos, Freddy.width, Freddy.height, null);
-        if (Marchand.isAlive)
-            g.drawImage(Marchand.image, Marchand.xpos, Marchand.ypos, Marchand.width, Marchand.height, null);
+        // Render Carlo
+        if (background[0]) {
+            g.drawImage(CarloBackgroundImage, 0, 0, WIDTH, HEIGHT, null);  // Background if collided
+        } else if (Carlo.isAlive) {
+            g.drawImage(Carlo.image, Carlo.xpos, Carlo.ypos, Carlo.width, Carlo.height, null);  // Player if not collided
+        }
 
+        // Render Coyle
+        if (background[1]) {
+            g.drawImage(CoyleBackgroundImage, 0, 0, WIDTH, HEIGHT, null);  // Background if collided
+        } else if (Coyle.isAlive) {
+            g.drawImage(Coyle.image, Coyle.xpos, Coyle.ypos, Coyle.width, Coyle.height, null);  // Player if not collided
 
-        if (sweeney.isAlive)
+        }
+
+        // Render Freddy
+        if (background[2]) {
+            g.drawImage(FreddyBackgroundImage, 0, 0, WIDTH, HEIGHT, null);  // Background if collided
+        } else if (Freddy.isAlive) {
+            g.drawImage(Freddy.image, Freddy.xpos, Freddy.ypos, Freddy.width, Freddy.height, null);  // Player if not collided
+        }
+
+        // Render Marchand
+        if (background[3]) {
+            g.drawImage(MarchandBackgroundImage, 0, 0, WIDTH, HEIGHT, null);  // Background if collided
+        } else if (Marchand.isAlive) {
+            g.drawImage(Marchand.image, Marchand.xpos, Marchand.ypos, Marchand.width, Marchand.height, null);  // Player if not collided
+        }
+
+        // Render Ullmark
+        if (background[4]) {
+            g.drawImage(UllmarkBackgroundImage, 0, 0, WIDTH, HEIGHT, null);  // Background if collided
+        } else if (Ullmark.isAlive) {
+            g.drawImage(Ullmark.image, Ullmark.xpos, Ullmark.ypos, Ullmark.width, Ullmark.height, null);  // Player if not collided
+        }
+
+        // Always render Sweeney last to appear on top of others
+        if (sweeney.isAlive) {
             g.drawImage(sweeney.image, sweeney.xpos, sweeney.ypos, sweeney.width, sweeney.height, null);
+        }
+
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        g.drawString("Score: " + score, 5, 20);
 
         g.dispose();
         bufferStrategy.show();
     }
+
+    void switchBackground(int i){                       //Eli Berk helped here
+        for(int x =0;x<background.length;x++){
+            background[x]=false;
+        }
+        if(i<background.length&&i>0) {
+            this.background[i] = true;
+            gameOver = true;
+        }
+    }
+
 }
